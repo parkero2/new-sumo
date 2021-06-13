@@ -22,7 +22,7 @@ int FrontRightIR = analogRead(FR);
 int FrontLeftIR = analogRead(FL);
 int BackLefttIR = analogRead(BL);
 
-void StopMotors() {
+void StopMotors() { //Turn all of the mor
     digitalWrite(Lf, LOW);
     digitalWrite(Lb, LOW);
     digitalWrite(Rb, LOW);
