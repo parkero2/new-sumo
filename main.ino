@@ -22,7 +22,7 @@ int FrontRightIR = analogRead(FR);
 int FrontLeftIR = analogRead(FL);
 int BackLefttIR = analogRead(BL);
 
-void StopMotors() { //Turn all of the mor
+void StopMotors() { //Turn all of the motors off (uses H-bridge)
     digitalWrite(Lf, LOW);
     digitalWrite(Lb, LOW);
     digitalWrite(Rb, LOW);
@@ -30,7 +30,7 @@ void StopMotors() { //Turn all of the mor
     delay(200);
 }
 
-void ChangeSpeed(int speed) {
+void ChangeSpeed(int speed) { //Change the speed of the motors
     analogWrite(LSp, speed);
     analogWrite(RSp, speed);
 }
@@ -59,7 +59,7 @@ void Right() {
     digitalWrite(Lf, HIGH);
 }
 
-int SonicSense() {
+int SonicSense() { //Get a ultrasonic reading and return it in mm
     digitalWrite(trigPin, LOW);
     delayMicroseconds(20);
     digitalWrite(trigPin, HIGH);
@@ -68,7 +68,7 @@ int SonicSense() {
     return mm;
 }
 
-boolean LineSense(boolean checkRes) {
+boolean LineSense(boolean checkRes) { //Check all sensorsDD
     int BackRightIR = analogRead(BR);
     int FrontRightIR = analogRead(FR);
     int FrontLeftIR = analogRead(FL);
@@ -103,14 +103,14 @@ void loop() {
        }
    }
    else if (LineSense(true)) {
-       if (FrontLeftIR > 1000) {
+       if (FrontLeftIR < 800) {
            //On line, move off
            Backward();
            analogWrite(RSp, 100); //Veer to the right
            delay(200);
            ChangeSpeed(200); //Reset speed to normal
        }
-       else if (FrontRightIR > 1000) {
+       else if (FrontRightIR < 800) { //My tests showed values less than 800 were typically on the line
            //On line, move off
            Backward();
            analogWrite(LSp, 100); //Veer to the right
