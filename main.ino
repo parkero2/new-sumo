@@ -95,6 +95,9 @@ void setup() {
 }
 
 void loop() {
+    Forward();
+    delay(999);
+    /*
    if (SonicSense() < 100 && !LineSense(true)) {
        ChangeSpeed(100);
        Forward();
@@ -118,9 +121,9 @@ void loop() {
            ChangeSpeed(200); //Reset speed to normal
        }
    }
-   else { //Start spinning tofind people
+   else { //Start spinning to find people
        ChangeSpeed(10);
        Left();
        delay(100);
-   }
+   }*/
 }
