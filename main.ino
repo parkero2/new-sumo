@@ -1,16 +1,16 @@
 //Declare pins
 //Left side motor variabe declaration
-int LSp = 5;
-int Lf = 6;
-int Lb = 7;
+int LSpeed = 5;
+int LeftFront = 6;
+int LeftBack = 7;
 //Right side motor variable declaration
-int RSp = 3;
-int Rf = 2;
-int Rb = 4;
+int RSpeed = 3;
+int RightForward = 2;
+int RightBack = 4;
 //Sensor declarations
 //Ultrasonic
-int echoPin = 11;
-int trigPin = 12;
+int echoPin = 12;
+int trigPin = 11;
 //IR sensors
 int BR = A3;
 int FR = A2;
@@ -22,59 +22,75 @@ int FrontRightIR = analogRead(FR);
 int FrontLeftIR = analogRead(FL);
 int BackLefttIR = analogRead(BL);
 
+const int offset = -2;
+
 void StopMotors() { //Turn all of the motors off (uses H-bridge)
-    digitalWrite(Lf, LOW);
-    digitalWrite(Lb, LOW);
-    digitalWrite(Rb, LOW);
-    digitalWrite(Rf, LOW);
+    Serial.println("Stopping...");
+    digitalWrite(LeftFront, LOW);
+    digitalWrite(LeftBack, LOW);
+    digitalWrite(RightBack, LOW);
+    digitalWrite(RightForward, LOW);
     delay(200);
 }
 
 void ChangeSpeed(int speed) { //Change the speed of the motors
-    analogWrite(LSp, speed);
-    analogWrite(RSp, speed);
+    Serial.println("Changing speed...");
+    //int OffSett = (int(round(speed / 100) * offset));
+    analogWrite(LSpeed, (speed - offset));
+    analogWrite(RSpeed, speed);
 }
 
 void Forward() {
+    Serial.println("Forward...");
     StopMotors();
-    digitalWrite(Rf, HIGH);
-    digitalWrite(Lf, HIGH);
+    digitalWrite(RightForward, HIGH);
+    digitalWrite(LeftFront, HIGH);
 }
 
 void Backward() {
+    Serial.println("Backward");
     StopMotors();
-    digitalWrite(Rb, HIGH);
-    digitalWrite(Lb, HIGH);
+    digitalWrite(RightBack, HIGH);
+    digitalWrite(LeftBack, HIGH);
 }
 
 void Left() {
+    Serial.println("Left...");
     StopMotors();
-    digitalWrite(Rf, HIGH);
-    digitalWrite(Lb, HIGH);
+    digitalWrite(RightForward, HIGH);
+    digitalWrite(LeftBack, HIGH);
 }
 
 void Right() {
+    Serial.println("Right...");
     StopMotors();
-    digitalWrite(Rb, HIGH);
-    digitalWrite(Lf, HIGH);
+    digitalWrite(RightBack, HIGH);
+    digitalWrite(LeftFront, HIGH);
 }
 
-int SonicSense() { //Get a ultrasonic reading and return it in mm
+float SonicSense() { //Get a ultrasonic reading and return it in mm
+    Serial.println("Ultrasonicing...");
     digitalWrite(trigPin, LOW);
-    delayMicroseconds(20);
+    delayMicroseconds(2);
     digitalWrite(trigPin, HIGH);
-    int mm = pulseIn(echoPin, HIGH) * 0.017;
+    delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
+    int mm = pulseIn(echoPin, HIGH, 1000000) * 0.01715; //I calculated this by dividing the speed of sound (343M/s) by 10,000, then by 2
     return mm;
 }
 
-boolean LineSense(boolean checkRes) { //Check all sensorsDD
-    int BackRightIR = analogRead(BR);
-    int FrontRightIR = analogRead(FR);
-    int FrontLeftIR = analogRead(FL);
-    int BackLefttIR = analogRead(BL);
+boolean LineSense(boolean checkRes) { //Check all sensors
+    Serial.println("Linesensors...");
+    BackRightIR = analogRead(BR);
+    FrontRightIR = analogRead(FR);
+    FrontLeftIR = analogRead(FL);
+    BackLefttIR = analogRead(BL);
+    Serial.println(BackRightIR);
+    Serial.println(BackLefttIR);
+    Serial.println(FrontLeftIR);
+    Serial.println(FrontRightIR);
     if (checkRes) {
-        if (BackLefttIR > 800 || FrontLeftIR > 800 || BackRightIR > 800 || FrontRightIR > 800) {
+        if (BackLefttIR < 700 || FrontLeftIR < 200 || FrontLeftIR < 200) {
             return true;
         }
         else {
@@ -84,46 +100,50 @@ boolean LineSense(boolean checkRes) { //Check all sensorsDD
 }
 
 void setup() {
-    pinMode(LSp, OUTPUT);
-    pinMode(RSp, OUTPUT);
-    pinMode(Lf, OUTPUT);
-    pinMode(Lb, OUTPUT);
-    pinMode(Rf, OUTPUT);
-    pinMode(Rb, OUTPUT);
+    pinMode(LSpeed, OUTPUT);
+    pinMode(RSpeed, OUTPUT);
+    pinMode(LeftFront, OUTPUT);
+    pinMode(LeftBack, OUTPUT);
+    pinMode(RightForward, OUTPUT);
+    pinMode(RightBack, OUTPUT);
     pinMode(trigPin, OUTPUT);
     Serial.begin(9600);
+    ChangeSpeed(80);
+    Forward();
 }
 
 void loop() {
-    Forward();
-    delay(999);
-    /*
+    LineSense(false);
+    delay(3000);
+    
    if (SonicSense() < 100 && !LineSense(true)) {
        ChangeSpeed(100);
        Forward();
-       if(SonicSense() < 20) {
+       if(SonicSense() < 50) {
            ChangeSpeed(120);
        }
    }
    else if (LineSense(true)) {
-       if (FrontLeftIR < 800) {
+       if (analogRead(FL) < 200) {
            //On line, move off
            Backward();
-           analogWrite(RSp, 100); //Veer to the right
+           analogWrite(RSpeed, 50);
+           analogWrite(RSpeed, 100); //Veer to the right
            delay(200);
-           ChangeSpeed(200); //Reset speed to normal
+           ChangeSpeed(100); //Reset speed to normal
        }
-       else if (FrontRightIR < 800) { //My tests showed values less than 800 were typically on the line
+       else if (analogRead(FR) < 200) { //My tests showed values less than 800 were typically on the line
            //On line, move off
            Backward();
-           analogWrite(LSp, 100); //Veer to the right
+           analogWrite(RSpeed, 50);
+           analogWrite(LSpeed, 100); //Veer to the right
            delay(200);
-           ChangeSpeed(200); //Reset speed to normal
+           ChangeSpeed(100); //Reset speed to normal
        }
    }
    else { //Start spinning to find people
        ChangeSpeed(10);
        Left();
        delay(100);
-   }*/
+   }
 }
